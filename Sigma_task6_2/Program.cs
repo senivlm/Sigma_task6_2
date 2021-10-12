@@ -81,70 +81,75 @@ namespace Sigma_task6_2
         public string FindMostPopularDays()
         {
             string print = "The most popular day for each IP:\n";
-            SortedDictionary<string, Dictionary<DayOfWeek, int>> findDays = new SortedDictionary<string, Dictionary<DayOfWeek, int>>();
+            DayOfWeek day = DayOfWeek.Monday;
+            int max = 0;
+            Dictionary<DayOfWeek, int> findDays = new Dictionary<DayOfWeek, int>();
+            List<string> contain = new List<string>();
             for (int i = 0; i < IPs.Length; ++i)
-                if (!findDays.ContainsKey(IPs[i].ip))
+                if (!contain.Contains(IPs[i].ip))
                 {
-                    findDays.Add(IPs[i].ip, new Dictionary<DayOfWeek, int>());
-                    findDays[IPs[i].ip].Add(IPs[i].day, 1);
+                    contain.Add(IPs[i].ip);
+                    for (int j = 0; j < IPs.Length; ++j)
+                        if (IPs[i].ip == IPs[j].ip)
+                            if (findDays.TryGetValue(IPs[i].day, out int key))
+                                findDays[IPs[i].day] = ++key;
+                            else findDays.Add(IPs[i].day, 1);
+                    foreach (var item in findDays)
+                        if (item.Value > max)
+                        {
+                            max = item.Value;
+                            day = item.Key;
+                        }
+                    print += IPs[i].ip + " : " + day + "\n";
                 }
-                else
-                {
-                    if(!findDays[IPs[i].ip].ContainsKey(IPs[i].day))
-                        findDays[IPs[i].ip].Add(IPs[i].day, 1);
-                    findDays[IPs[i].ip][IPs[i].day]++;
-                }
-
-            DayOfWeek day = DayOfWeek.Monday; 
-            int count = 0;
-            foreach (var item in findDays)
-            {
-                count = 0;
-                foreach (var item1 in item.Value)
-                    if(item1.Value > count)
-                    {
-                        day = item1.Key;
-                        count = item1.Value;
-                    }
-                print += item.Key + " : " + day + "\n";
-            }
             return print;
         }
 
         public string FindMostPopularTimes()
         {
             string print = "The most popular time for each IP:\n";
-            Dictionary<string, Dictionary<DateTime, int>> findTimes = new Dictionary<string, Dictionary<DateTime, int>>();
+            List<DateTime> dates = new List<DateTime>();
+            List<string> contain = new List<string>();
+            bool check = false;
             for (int i = 0; i < IPs.Length; ++i)
-                if (!findTimes.ContainsKey(IPs[i].ip))
+                if (!contain.Contains(IPs[i].ip))
                 {
-                    findTimes.Add(IPs[i].ip, new Dictionary<DateTime, int>());
-                    findTimes[IPs[i].ip].Add(IPs[i].time, 1);
+                    contain.Add(IPs[i].ip);
+                    for (int j = 0; j < IPs.Length; ++j)
+                        if (IPs[i].ip == IPs[j].ip)
+                            dates.Add(IPs[j].time);
+
+                    dates.Sort();
+                    for (int j = 0; j < dates.Count - 1; ++j)
+                        if ((dates[dates.Count - 1] - dates[j]).TotalHours <= 1)
+                        {
+                            print += IPs[i].ip + " : " + dates[j].ToString(@"HH\:mm\:ss") + "-" + dates[dates.Count - 1].ToString(@"HH\:mm\:ss");
+                            check = true;
+                            break;
+                        }
+                    if(!check)
+                        print += IPs[i].ip + " : " + dates[dates.Count - 1].ToString(@"HH\:mm\:ss") + "-" +
+                            dates[dates.Count - 1].AddHours(1).ToString(@"HH\:mm\:ss");
+                    print += "\n";
                 }
-                else
-                {
-                    if (!findTimes[IPs[i].ip].ContainsKey(IPs[i].time))
-                        findTimes[IPs[i].ip].Add(IPs[i].time, 1);
-                    findTimes[IPs[i].ip][IPs[i].time]++;
-                }
-            foreach (var item in findTimes)
-            {
-                print += item.Key + " : " + item.Value.First().Key.ToString(@"HH\:mm\:ss") + 
-                    "-" + item.Value.Last().Key.ToString(@"HH\:mm\:ss") + "\n";
-            }
             return print;
         }
-        public string FindMostPupularTime()
+        public string FindMostPupularTimeServer()
         {
-            SortedDictionary<DateTime, int> findTime = new SortedDictionary<DateTime, int>();
+            List<DateTime> dates = new List<DateTime>();
             for (int i = 0; i < IPs.Length; ++i)
-                if (!findTime.ContainsKey(IPs[i].time))
-                    findTime.Add(IPs[i].time, 1);
-                else findTime[IPs[i].time]++;
-            
-            return $"The most popular time is : " + findTime.First().Key.ToString(@"HH\:mm\:ss") + 
-                    "-" + findTime.Last().Key.ToString(@"HH\:mm\:ss") + "\n";
+                dates.Add(IPs[i].time);
+            dates.Sort();
+            for (int i = 0; i < dates.Count - 1; ++i)
+                if ((dates[dates.Count - 1] - dates[i]).TotalHours <= 1)
+                    return "The most popular time in a day IP:\n" + 
+                        dates[i].ToString(@"HH\:mm\:ss") + "-" + 
+                        dates[dates.Count - 1].ToString(@"HH\:mm\:ss") + "\n";        
+            return "The most popular time in a day IP:\n" + 
+                dates[dates.Count - 1].ToString(@"HH\:mm\:ss") + "-" +
+                dates[dates.Count - 1].AddHours(1).ToString(@"HH\:mm\:ss") + "\n";
         }
+
         public override string ToString()
         {
             string print = "";
@@ -159,12 +164,12 @@ namespace Sigma_task6_2
         static void Main(string[] args)
         {
             Site site = new Site();
-            site.ReadFile(@"C:\Users\VETAL\Desktop\IP.txt");
+            site.ReadFile(@"C:\Users\VETAL\Desktop\IPP.txt");
             Console.WriteLine(site);
             Console.WriteLine(site.FindAmountVisitorsIPs());
             Console.WriteLine(site.FindMostPopularDays());
             Console.WriteLine(site.FindMostPopularTimes());
-            Console.WriteLine(site.FindMostPupularTime());
+            Console.WriteLine(site.FindMostPupularTimeServer());
         }
     }
 }
