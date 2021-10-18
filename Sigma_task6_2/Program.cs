@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 
 namespace Sigma_task6_2
-{
+{Чому все в одному файлі
     class IP
     {
         public string ip { get; set; }
@@ -32,7 +32,7 @@ namespace Sigma_task6_2
     {
         IP[] IPs;
         public void ReadFile(string path)
-        {
+        {Використовуйте using, або закривайте потоки та використовуйте винятки
             StreamReader reader = new StreamReader(path);
             var lineCount = File.ReadLines(path).Count();
             string line = reader.ReadLine();
